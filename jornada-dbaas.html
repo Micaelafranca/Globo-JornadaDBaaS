@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jornada do Usuário — DBaaS</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F5F3EE;
+    --surface: #FFFFFF;
+    --border: #E0DBD0;
+    --text: #1A1814;
+    --text-muted: #6B6860;
+    --text-hint: #A09D97;
+    --green: #1D6B4E;
+    --green-bg: #EBF5F0;
+    --green-mid: #5AAF85;
+    --red: #8B2525;
+    --red-bg: #FBF0F0;
+    --amber: #7A4E0D;
+    --amber-bg: #FEF4E4;
+    --purple: #3C3489;
+    --purple-bg: #EEEDFE;
+    --blue: #1A4F7A;
+    --blue-bg: #EBF3FB;
+    --accent: #1D6B4E;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--text);
+    color: #F5F3EE;
+    padding: 56px 48px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -60px; top: -60px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    border: 60px solid rgba(255,255,255,0.04);
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: 80px; bottom: -100px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 40px solid rgba(255,255,255,0.03);
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: rgba(245,243,238,0.5);
+    margin-bottom: 16px;
+    font-weight: 400;
+  }
+  .header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(32px, 5vw, 52px);
+    font-weight: 400;
+    line-height: 1.15;
+    margin-bottom: 20px;
+    max-width: 600px;
+  }
+  .header h1 em {
+    font-style: italic;
+    color: var(--green-mid);
+  }
+  .header-meta {
+    font-size: 13px;
+    color: rgba(245,243,238,0.5);
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .header-meta span { display: flex; align-items: center; gap: 6px; }
+
+  /* NAV TABS */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 48px;
+    display: flex;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-tab {
+    padding: 16px 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    white-space: nowrap;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .nav-tab:hover { color: var(--text); }
+  .nav-tab.active { color: var(--text); border-bottom-color: var(--text); }
+
+  /* CONTENT PANELS */
+  .panel { display: none; padding: 48px; max-width: 900px; margin: 0 auto; }
+  .panel.active { display: block; }
+
+  /* SECTION LABEL */
+  .eyebrow {
+    font-size: 10px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--text-hint);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .step-badge {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-badge.problem { background: var(--red-bg); color: var(--red); }
+  .step-badge.ideal { background: var(--green-bg); color: var(--green); }
+  .card-title { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400; line-height: 1.3; }
+  .card-sub { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin: 0 4px 4px 0;
+  }
+  .tag.red { background: var(--red-bg); color: var(--red); }
+  .tag.green { background: var(--green-bg); color: var(--green); }
+  .tag.amber { background: var(--amber-bg); color: var(--amber); }
+  .tag.purple { background: var(--purple-bg); color: var(--purple); }
+  .tag.blue { background: var(--blue-bg); color: var(--blue); }
+
+  /* TWO COLUMNS */
+  .cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 640px) { .cols2 { grid-template-columns: 1fr; } }
+
+  .col-block {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .col-block .eyebrow { margin-bottom: 10px; }
+  .col-item {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .col-item .icon { flex-shrink: 0; margin-top: 1px; }
+  .col-item.good { color: var(--text); }
+
+  /* MOCKUP */
+  .mockup {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin-top: 14px;
+    font-size: 13px;
+  }
+  .mockup-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-hint); margin-bottom: 8px; }
+  .mockup-title { font-weight: 500; color: var(--text); margin-bottom: 6px; font-size: 14px; }
+  .mockup-body { color: var(--text-muted); margin-bottom: 12px; line-height: 1.5; }
+  .btn-green {
+    display: inline-block;
+    background: var(--green);
+    color: #fff;
+    font-size: 12px; font-weight: 500;
+    padding: 6px 16px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-link { color: var(--blue); font-size: 12px; margin-left: 12px; text-decoration: underline; }
+  .pill-step {
+    display: inline-block;
+    background: var(--purple-bg);
+    color: var(--purple);
+    font-size: 11px; font-weight: 500;
+    padding: 3px 10px; border-radius: 20px;
+    margin: 2px 3px 2px 0;
+  }
+
+  /* PROGRESS BAR */
+  .progress-wrap { display: flex; align-items: center; gap: 10px; font-size: 13px; background: var(--bg); padding: 8px 12px; border-radius: 8px; }
+  .progress-track { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 3px; background: var(--green); }
+  .progress-label { font-size: 11px; white-space: nowrap; color: var(--text-muted); }
+
+  /* SIZING CARDS */
+  .sizing-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 10px; }
+  @media (max-width: 540px) { .sizing-grid { grid-template-columns: 1fr; } }
+  .sizing-card {
+    border-radius: 8px;
+    padding: 14px;
+    border-top: 3px solid;
+    background: var(--bg);
+  }
+  .sizing-card .s-name { font-weight: 500; font-size: 13px; margin-bottom: 8px; }
+  .sizing-card .s-item { font-size: 12px; color: var(--text-muted); padding: 2px 0; display: flex; gap: 6px; }
+  .sizing-card .s-cost { font-size: 11px; margin-top: 8px; font-weight: 500; }
+
+  /* CHECKLIST */
+  .check-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg);
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .check-item input[type=checkbox] { width: 15px; height: 15px; accent-color: var(--green); flex-shrink: 0; }
+
+  /* CONFIRMATION MOCKUP */
+  .confirm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .confirm-field .cf-label { font-size: 11px; color: var(--text-hint); margin-bottom: 2px; }
+  .confirm-field .cf-value { font-size: 13px; font-weight: 500; color: var(--text); }
+
+  /* SENTIMENT BAR */
+  .sentiment-bar {
+    height: 8px; border-radius: 4px; overflow: hidden;
+    display: flex; margin-bottom: 6px;
+  }
+  .sentiment-bar div { flex: 1; }
+
+  /* CONNECTOR */
+  .connector { text-align: center; color: var(--text-hint); font-size: 20px; padding: 6px 0; margin: 4px 0; }
+
+  /* SUMMARY CHIPS */
+  .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  /* DIVIDER */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  /* COMPARISON layout */
+  .compare-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+    align-items: stretch;
+  }
+  @media (max-width: 640px) { .compare-row { grid-template-columns: 1fr; } }
+  .compare-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+  }
+  .compare-card.now { border-top: 3px solid #D4706A; }
+  .compare-card.ideal { border-top: 3px solid var(--green-mid); }
+  .compare-card .cc-header { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 500; margin-bottom: 12px; }
+  .compare-card.now .cc-header { color: var(--red); }
+  .compare-card.ideal .cc-header { color: var(--green); }
+
+  /* PRINCIPLES */
+  .principle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; margin-top: 16px; }
+  .principle-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .principle-icon { font-size: 22px; margin-bottom: 8px; }
+  .principle-title { font-weight: 500; font-size: 13px; margin-bottom: 4px; color: var(--text); }
+  .principle-desc { font-size: 12px; color: var(--text-muted); line-height: 1.5; }
+
+  /* FOOTER */
+  footer {
+    background: var(--text);
+    color: rgba(245,243,238,0.4);
+    text-align: center;
+    padding: 28px 48px;
+    font-size: 12px;
+    margin-top: 40px;
+  }
+  footer strong { color: rgba(245,243,238,0.8); font-weight: 500; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .panel.active .card,
+  .panel.active .compare-row,
+  .panel.active .principle-card {
+    animation: fadeUp .35s ease both;
+  }
+  .panel.active .card:nth-child(2) { animation-delay: .05s; }
+  .panel.active .card:nth-child(3) { animation-delay: .10s; }
+  .panel.active .card:nth-child(4) { animation-delay: .15s; }
+  .panel.active .card:nth-child(5) { animation-delay: .20s; }
+  .panel.active .card:nth-child(6) { animation-delay: .25s; }
+  .panel.active .card:nth-child(7) { animation-delay: .30s; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <p class="header-eyebrow">UX Research · DBaaS · 2026</p>
+  <h1>Jornada do usuário<br><em>DBaaS</em></h1>
+  <div class="header-meta">
+    <span>✍︎ Micaela Franca</span>
+    <span>◷ Maio 2026</span>
+    <span>◈ 6 etapas mapeadas</span>
+  </div>
+</div>
+
+<nav class="nav" role="tablist">
+  <button class="nav-tab active" onclick="show('atual')" role="tab">Como é hoje</button>
+  <button class="nav-tab" onclick="show('ideal')" role="tab">Como deveria ser</button>
+  <button class="nav-tab" onclick="show('compare')" role="tab">Comparativo</button>
+  <button class="nav-tab" onclick="show('principios')" role="tab">Princípios</button>
+</nav>
+
+<!-- ============ PAINEL: COMO É HOJE ============ -->
+<div id="panel-atual" class="panel active">
+
+  <p class="eyebrow">Experiência atual</p>
+  <h2 style="font-family:'DM Serif Display',serif; font-size:28px; font-weight:400; margin-bottom:8px">A jornada como ela acontece hoje</h2>
+  <p style="color:var(--text-muted); font-size:14px; margin-bottom:32px; max-width:560px">A experiência é marcada por falta de orientação, dependência de processos externos e aprendizado informal a cada etapa.</p>
+
+  <div style="margin-bottom:24px">
+    <p class="eyebrow" style="margin-bottom:6px">Sentimento ao longo da jornada</p>
+    <div class="sentiment-bar">
+      <div style="background:#F7C1C1"></div>
+      <div style="background:#F0997B"></div>
+      <div style="background:#E87B50"></div>
+      <div style="background:#E24B4A"></div>
+      <div style="background:#C0DD97"></div>
+      <div style="background:#97C459"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text-hint)">
+      <span>😕 Confusão</span><span>😤 Frustração</span><span>😊 Funcional</span>
+    </div>
+  </div>
+
+  <!-- Etapa 1 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge problem">1</div>
+      <div>
+        <div class="card-title">Descoberta de pré-requisitos</div>
+        <div class="card-sub">VPN · Centro de custo · Time no DBaaS</div>
+      </div>
+      <span class="tag red" style="margin-left:auto;flex-shrink:0">Invisível</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Experiência</p>
+        <div class="col-item"><span class="icon">✕</span>Aprendizado ocorre de forma informal</div>
+        <div class="col-item"><span class="icon">✕</span>Pré-requisitos não são visíveis na plataforma</div>
+        <div class="col-item"><span class="icon">✕</span>Sem documentação de entrada</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Impacto</p>
+        <div class="col-item"><span class="icon">→</span>Usuário depende de colegas e Slack</div>
+        <div class="col-item"><span class="icon">→</span>Tempo perdido antes de começar</div>
+        <div class="col-item"><span class="icon">→</span>Experiência inconsistente entre times</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 2 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge problem">2</div>
+      <div>
+        <div class="card-title">Habilitação fora da plataforma</div>
+        <div class="card-sub">Associação de centro de custo via DevFinOps</div>
+      </div>
+      <span class="tag red" style="margin-left:auto;flex-shrink:0">Fragmentado</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Experiência</p>
+        <div class="col-item"><span class="icon">✕</span>Processo indireto com múltiplas dependências</div>
+        <div class="col-item"><span class="icon">✕</span>Sem visibilidade de status da solicitação</div>
+        <div class="col-item"><span class="icon">✕</span>Espera sem previsão de prazo</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Impacto</p>
+        <div class="col-item"><span class="icon">→</span>Fluxo completamente fragmentado</div>
+        <div class="col-item"><span class="icon">→</span>Ansiedade por falta de feedback</div>
+        <div class="col-item"><span class="icon">→</span>Dependência de terceiros para avançar</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 3 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge problem">3</div>
+      <div>
+        <div class="card-title">Primeiro acesso ao DBaaS</div>
+        <div class="card-sub">Tela de erro → RITM no ServiceNow → Slack → novo acesso</div>
+      </div>
+      <span class="tag red" style="margin-left:auto;flex-shrink:0">Erro antes de orientar</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Experiência</p>
+        <div class="col-item"><span class="icon">✕</span>Mensagem de erro antes de qualquer orientação</div>
+        <div class="col-item"><span class="icon">✕</span>Usuário não sabe o que é RITM, ServiceNow, "team"</div>
+        <div class="col-item"><span class="icon">✕</span>Documentação transfere responsabilidade sem contexto</div>
+        <div class="col-item"><span class="icon">✕</span>Sem SLA, status ou checklist guiado</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Mensagem atual na tela</p>
+        <div style="background:#FBF0F0; border-radius:8px; padding:12px 14px; font-size:12px; color:var(--red); border-left:3px solid #D4706A; margin-top:4px; line-height:1.6">
+          "You must be set to at least one team to use the system and the service administrator has been notified about this."
+        </div>
+        <div style="font-size:12px; color:var(--text-muted); margin-top:8px">O usuário não sabe: quem é o admin, qual canal usar, o que fazer a seguir.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 4 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge" style="background:var(--blue-bg);color:var(--blue)">4</div>
+      <div>
+        <div class="card-title">Criação de banco</div>
+        <div class="card-sub">Add → campos → tamanho → confirmar → acompanhar</div>
+      </div>
+      <span class="tag blue" style="margin-left:auto;flex-shrink:0">Funcional, com gaps</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Pontos positivos</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Imagens na documentação ajudam navegação</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Task Histories dão rastreabilidade</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Problemas</p>
+        <div class="col-item"><span class="icon">✕</span>Ensina "onde clicar", não "como decidir"</div>
+        <div class="col-item"><span class="icon">✕</span>Sizing sem critério de escolha</div>
+        <div class="col-item"><span class="icon">✕</span>Confirmação sem resumo de custo e impacto</div>
+        <div class="col-item"><span class="icon">✕</span>Notificações técnicas demais</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 5 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge" style="background:var(--green-bg);color:var(--green)">5</div>
+      <div>
+        <div class="card-title">Editar banco</div>
+        <div class="card-sub">Details → alterar campos → Save</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Simples</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Pontos positivos</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Fluxo simples e direto</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Campos críticos protegidos (engine, sizing…)</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Problemas</p>
+        <div class="col-item"><span class="icon">✕</span>Sem explicação de impacto de cada alteração</div>
+        <div class="col-item"><span class="icon">✕</span>Sem histórico de alterações ou auditoria</div>
+        <div class="col-item"><span class="icon">✕</span>Sem padrões recomendados de nomenclatura</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 6 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge" style="background:var(--blue-bg);color:var(--blue)">6</div>
+      <div>
+        <div class="card-title">Excluir banco</div>
+        <div class="card-sub">Destroy → confirmar nome → quarentena 14 dias</div>
+      </div>
+      <span class="tag blue" style="margin-left:auto;flex-shrink:0">Seguro, gaps no contexto</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Pontos positivos</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Múltiplas confirmações reduzem erros acidentais</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Quarentena de 14 dias protege os dados</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Problemas</p>
+        <div class="col-item"><span class="icon">✕</span>Sem explicação de impacto em apps conectadas</div>
+        <div class="col-item"><span class="icon">✕</span>Quarentena pouco contextualizada (como recuperar?)</div>
+        <div class="col-item"><span class="icon">✕</span>Sem checklist preventivo pré-exclusão</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 7 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge" style="background:var(--blue-bg);color:var(--blue)">7</div>
+      <div>
+        <div class="card-title">Redimensionar banco</div>
+        <div class="card-sub">Resizes/Upgrade → novo tamanho → confirmar</div>
+      </div>
+      <span class="tag blue" style="margin-left:auto;flex-shrink:0">Funcional, sem orientação</span>
+    </div>
+    <div class="cols2">
+      <div class="col-block">
+        <p class="eyebrow">Pontos positivos</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Confirmação antes da alteração</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Auto resize disponível</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Problemas</p>
+        <div class="col-item"><span class="icon">✕</span>Sem orientação sobre quando redimensionar</div>
+        <div class="col-item"><span class="icon">✕</span>Sem explicação de impacto financeiro</div>
+        <div class="col-item"><span class="icon">✕</span>Experiência reativa, não preventiva</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="eyebrow" style="margin-bottom:10px">Padrões sistêmicos identificados</p>
+  <div class="chips-wrap">
+    <span class="tag red">Falta de onboarding</span>
+    <span class="tag red">Dependência de terceiros</span>
+    <span class="tag red">Comunicação técnica</span>
+    <span class="tag red">Ausência de contexto</span>
+    <span class="tag red">Sem orientação de custo</span>
+    <span class="tag red">Aprendizado informal</span>
+    <span class="tag green">Imagens ajudam navegação</span>
+    <span class="tag green">Quarentena protege dados</span>
+  </div>
+</div>
+
+
+<!-- ============ PAINEL: COMO DEVERIA SER ============ -->
+<div id="panel-ideal" class="panel">
+
+  <p class="eyebrow">Experiência ideal</p>
+  <h2 style="font-family:'DM Serif Display',serif; font-size:28px; font-weight:400; margin-bottom:8px">Como deveria ser cada etapa</h2>
+  <p style="color:var(--text-muted); font-size:14px; margin-bottom:32px; max-width:560px">Melhorias baseadas na análise do documento — guiar antes de bloquear, orientar a decisão e tornar o impacto visível em cada passo.</p>
+
+  <!-- Etapa 1 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">1</div>
+      <div>
+        <div class="card-title">Onboarding guiado antes do primeiro acesso</div>
+        <div class="card-sub">Substituir aprendizado informal por checklist visível na plataforma</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Autonomia</span>
+    </div>
+    <div class="cols2" style="margin-bottom:14px">
+      <div class="col-block">
+        <p class="eyebrow">Melhorias</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Checklist de pré-requisitos visível na entrada</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Links diretos para cada ação necessária</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Glossário integrado (VPN, time, RITM…)</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Progresso visível a cada pré-requisito cumprido</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow" style="margin-bottom:10px">Checklist ideal de entrada</p>
+        <div class="progress-wrap" style="margin-bottom:6px">
+          <span style="font-size:13px;color:var(--text-muted);text-decoration:line-through;flex:1">VPN configurada</span>
+          <div class="progress-track" style="width:80px"><div class="progress-fill" style="width:100%"></div></div>
+          <span style="color:var(--green);font-size:11px">✓ Feito</span>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:6px">
+          <span style="font-size:13px;color:var(--text-muted);text-decoration:line-through;flex:1">Centro de custo associado</span>
+          <div class="progress-track" style="width:80px"><div class="progress-fill" style="width:100%"></div></div>
+          <span style="color:var(--green);font-size:11px">✓ Feito</span>
+        </div>
+        <div class="progress-wrap">
+          <span style="font-size:13px;color:var(--text);flex:1">Inclusão em um time</span>
+          <div class="progress-track" style="width:80px"><div class="progress-fill" style="width:30%"></div></div>
+          <span style="color:var(--amber);font-size:11px">Em andamento</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 2 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">2</div>
+      <div>
+        <div class="card-title">Primeiro acesso: orientação antes do erro</div>
+        <div class="card-sub">A plataforma deve guiar, não quebrar</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Clareza</span>
+    </div>
+    <div class="col-block" style="margin-bottom:14px">
+      <p class="eyebrow">Melhorias</p>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Mensagem amigável com próximos passos em vez de erro técnico</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Botão direto para abrir solicitação, sem jargão</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>SLA estimado e status da liberação visíveis</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Links para documentação e canal de suporte na mesma tela</div>
+    </div>
+    <div class="mockup">
+      <p class="mockup-label">Tela ideal de primeiro acesso</p>
+      <p class="mockup-title">Você ainda não possui acesso ao DBaaS</p>
+      <p class="mockup-body">Para utilizar a plataforma, siga os passos abaixo e acompanhe o progresso aqui.</p>
+      <div style="margin-bottom:12px">
+        <span class="pill-step">1. Solicitar inclusão em um time</span>
+        <span class="pill-step">2. Aguardar aprovação (~2 dias úteis)</span>
+        <span class="pill-step">3. Acessar novamente</span>
+      </div>
+      <span class="btn-green">Abrir solicitação</span>
+      <span class="btn-link">Documentação</span>
+      <span class="btn-link">Canal no Slack</span>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 3 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">3</div>
+      <div>
+        <div class="card-title">Criação de banco com orientação contextual</div>
+        <div class="card-sub">Ensinar a decidir, não só onde clicar</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Decisão guiada</span>
+    </div>
+    <div class="col-block" style="margin-bottom:14px">
+      <p class="eyebrow">Melhorias</p>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Guia de sizing por cenário de uso real</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Impacto de custo estimado ao escolher tamanho</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Confirmação com resumo completo (banco, ambiente, custo, impacto)</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Notificação humanizada com tempo estimado (SLA)</div>
+    </div>
+    <p class="eyebrow" style="margin-bottom:8px">Guia de sizing ideal</p>
+    <div class="sizing-grid">
+      <div class="sizing-card" style="border-top-color:#85B7EB">
+        <div class="s-name" style="color:var(--blue)">Tiny</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>Testes e DEV</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>Baixa volumetria</div>
+        <div class="s-cost" style="color:var(--green)">Menor custo</div>
+      </div>
+      <div class="sizing-card" style="border-top-color:#5DCAA5">
+        <div class="s-name" style="color:#085041">Medium</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>APIs internas</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>Uso moderado</div>
+        <div class="s-cost" style="color:var(--amber)">Custo moderado</div>
+      </div>
+      <div class="sizing-card" style="border-top-color:#AFA9EC">
+        <div class="s-name" style="color:var(--purple)">Large</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>Produção crítica</div>
+        <div class="s-item"><span style="color:var(--green)">✓</span>Alto volume de dados</div>
+        <div class="s-cost" style="color:var(--red)">Maior custo</div>
+      </div>
+    </div>
+    <div class="mockup" style="margin-top:14px; display:flex; align-items:center; gap:12px">
+      <span style="font-size:22px">✅</span>
+      <div>
+        <div class="mockup-title">Seu banco "meu-banco-prod" está sendo criado</div>
+        <div style="font-size:12px;color:var(--text-muted)">Tempo médio: 5 minutos · Você será avisado quando estiver pronto</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 4 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">4</div>
+      <div>
+        <div class="card-title">Editar banco com governança e rastreabilidade</div>
+        <div class="card-sub">Tornar o impacto de cada alteração explícito</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Governança</span>
+    </div>
+    <div class="cols2" style="margin-bottom:14px">
+      <div class="col-block">
+        <p class="eyebrow">Melhorias</p>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Tooltip de impacto ao trocar time/projeto</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Log de alterações auditável</div>
+        <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Padrões sugeridos por campo</div>
+      </div>
+      <div class="col-block">
+        <p class="eyebrow">Padrões recomendados</p>
+        <div class="col-item good"><span style="color:var(--text-hint);font-size:12px">Projeto</span><span>→ Nome do produto ou sistema</span></div>
+        <div class="col-item good"><span style="color:var(--text-hint);font-size:12px">Descrição</span><span>→ Objetivo do banco</span></div>
+        <div class="col-item good"><span style="color:var(--text-hint);font-size:12px">Time</span><span>→ Time responsável operacional</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 5 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">5</div>
+      <div>
+        <div class="card-title">Excluir banco com checklist preventivo</div>
+        <div class="card-sub">Segurança operacional com contexto de impacto</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Prevenção</span>
+    </div>
+    <div class="col-block" style="margin-bottom:14px">
+      <p class="eyebrow">Melhorias</p>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Checklist obrigatório antes de iniciar a exclusão</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Explicação clara da quarentena: o que acontece, como recuperar, quem acionar</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Informação sobre impacto em aplicações dependentes</div>
+    </div>
+    <p class="eyebrow" style="margin-bottom:8px">Checklist ideal pré-exclusão</p>
+    <div class="check-item"><input type="checkbox" checked> Backup validado</div>
+    <div class="check-item"><input type="checkbox" checked> Times afetados notificados</div>
+    <div class="check-item"><input type="checkbox"> Aplicações dependentes verificadas</div>
+    <div class="check-item"><input type="checkbox"> Ambiente de produção confirmado</div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- Etapa 6 -->
+  <div class="card">
+    <div class="card-header">
+      <div class="step-badge ideal">6</div>
+      <div>
+        <div class="card-title">Redimensionar com consciência de custo e impacto</div>
+        <div class="card-sub">Experiência preventiva, não reativa</div>
+      </div>
+      <span class="tag green" style="margin-left:auto;flex-shrink:0">Custo visível</span>
+    </div>
+    <div class="col-block" style="margin-bottom:14px">
+      <p class="eyebrow">Melhorias</p>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Alerta de saturação antes de falhar, não depois</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Custo estimado exibido ao selecionar novo tamanho</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>Resumo completo de impacto na confirmação</div>
+      <div class="col-item good"><span class="icon" style="color:var(--green)">✓</span>SLA de execução e aviso de indisponibilidade temporária</div>
+    </div>
+    <div class="mockup">
+      <p class="mockup-label">Confirmação ideal de resize</p>
+      <div class="confirm-grid">
+        <div class="confirm-field"><div class="cf-label">Disco</div><div class="cf-value">5 GB → 20 GB</div></div>
+        <div class="confirm-field"><div class="cf-label">Ambiente</div><div class="cf-value">Produção</div></div>
+        <div class="confirm-field"><div class="cf-label">Banco</div><div class="cf-value">meu-banco-prod</div></div>
+        <div class="confirm-field"><div class="cf-label">Impacto financeiro</div><div class="cf-value" style="color:var(--amber)">Aumento estimado de custo</div></div>
+      </div>
+      <div style="background:var(--amber-bg);border-radius:6px;padding:8px 12px;font-size:12px;color:var(--amber);margin-bottom:10px">
+        ⚠ Pode haver indisponibilidade temporária durante o resize. Tempo médio: 10 min.
+      </div>
+      <span class="btn-green">Confirmar resize</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+  <p class="eyebrow" style="margin-bottom:10px">Princípios da experiência ideal</p>
+  <div class="chips-wrap">
+    <span class="tag green">Guiar antes de bloquear</span>
+    <span class="tag green">Decisão com contexto</span>
+    <span class="tag green">Custo sempre visível</span>
+    <span class="tag green">Autonomia do usuário</span>
+    <span class="tag green">Rastreabilidade</span>
+    <span class="tag green">SLA transparente</span>
+    <span class="tag green">Prevenção antes do erro</span>
+  </div>
+</div>
+
+
+<!-- ============ PAINEL: COMPARATIVO ============ -->
+<div id="panel-compare" class="panel">
+
+  <p class="eyebrow">Comparativo</p>
+  <h2 style="font-family:'DM Serif Display',serif; font-size:28px; font-weight:400; margin-bottom:8px">Como é hoje vs. como deveria ser</h2>
+  <p style="color:var(--text-muted); font-size:14px; margin-bottom:32px; max-width:560px">Cada etapa comparada lado a lado.</p>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Pré-requisitos</div><div class="col-item"><span>✕</span>Aprendizado informal com colegas</div><div class="col-item"><span>✕</span>Pré-requisitos invisíveis na plataforma</div><div class="col-item"><span>✕</span>Sem documentação de entrada</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Pré-requisitos</div><div class="col-item good"><span style="color:var(--green)">✓</span>Checklist de pré-requisitos visível com progresso</div><div class="col-item good"><span style="color:var(--green)">✓</span>Links diretos para cada ação</div><div class="col-item good"><span style="color:var(--green)">✓</span>Glossário integrado na plataforma</div></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Primeiro acesso</div><div class="col-item"><span>✕</span>Tela de erro técnica sem contexto</div><div class="col-item"><span>✕</span>RITM explicada sem instruções claras</div><div class="col-item"><span>✕</span>Sem SLA ou feedback de progresso</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Primeiro acesso</div><div class="col-item good"><span style="color:var(--green)">✓</span>Mensagem amigável com próximos passos</div><div class="col-item good"><span style="color:var(--green)">✓</span>Botão direto para abrir solicitação</div><div class="col-item good"><span style="color:var(--green)">✓</span>SLA e canal de suporte visíveis na tela</div></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Criação de banco</div><div class="col-item"><span>✕</span>Ensina onde clicar, não como decidir</div><div class="col-item"><span>✕</span>Sizing sem critério ou guia de custo</div><div class="col-item"><span>✕</span>Notificações técnicas e sem SLA</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Criação de banco</div><div class="col-item good"><span style="color:var(--green)">✓</span>Guia de sizing por cenário de uso</div><div class="col-item good"><span style="color:var(--green)">✓</span>Custo estimado ao escolher tamanho</div><div class="col-item good"><span style="color:var(--green)">✓</span>Notificação humanizada com tempo estimado</div></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Editar banco</div><div class="col-item"><span>✕</span>Sem explicação do impacto das alterações</div><div class="col-item"><span>✕</span>Sem histórico de alterações auditável</div><div class="col-item"><span>✕</span>Sem padrões de nomenclatura sugeridos</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Editar banco</div><div class="col-item good"><span style="color:var(--green)">✓</span>Tooltip de impacto ao trocar time/projeto</div><div class="col-item good"><span style="color:var(--green)">✓</span>Log de alterações auditável</div><div class="col-item good"><span style="color:var(--green)">✓</span>Padrões sugeridos por campo</div></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Excluir banco</div><div class="col-item"><span>✕</span>Sem impacto em aplicações conectadas</div><div class="col-item"><span>✕</span>Quarentena pouco contextualizada</div><div class="col-item"><span>✕</span>Sem orientação preventiva antes da ação</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Excluir banco</div><div class="col-item good"><span style="color:var(--green)">✓</span>Checklist obrigatório pré-exclusão</div><div class="col-item good"><span style="color:var(--green)">✓</span>Explicação clara de quarentena e recuperação</div><div class="col-item good"><span style="color:var(--green)">✓</span>Impacto em apps dependentes visível</div></div>
+  </div>
+
+  <div class="compare-row">
+    <div class="compare-card now"><div class="cc-header">Como é hoje — Resize</div><div class="col-item"><span>✕</span>Sem orientação sobre quando redimensionar</div><div class="col-item"><span>✕</span>Sem explicação de impacto financeiro</div><div class="col-item"><span>✕</span>Experiência reativa e não preventiva</div></div>
+    <div class="compare-card ideal"><div class="cc-header">Como deveria ser — Resize</div><div class="col-item good"><span style="color:var(--green)">✓</span>Alerta de saturação proativo</div><div class="col-item good"><span style="color:var(--green)">✓</span>Custo estimado ao escolher novo tamanho</div><div class="col-item good"><span style="color:var(--green)">✓</span>Confirmação com resumo completo de impacto</div></div>
+  </div>
+
+</div>
+
+
+<!-- ============ PAINEL: PRINCÍPIOS ============ -->
+<div id="panel-principios" class="panel">
+
+  <p class="eyebrow">Princípios de design</p>
+  <h2 style="font-family:'DM Serif Display',serif; font-size:28px; font-weight:400; margin-bottom:8px">O que deve guiar a experiência ideal</h2>
+  <p style="color:var(--text-muted); font-size:14px; margin-bottom:32px; max-width:560px">Sete princípios extraídos da análise que devem nortear todas as melhorias de UX do DBaaS.</p>
+
+  <div class="principle-grid">
+    <div class="principle-card">
+      <div class="principle-icon">🧭</div>
+      <div class="principle-title">Guiar antes de bloquear</div>
+      <div class="principle-desc">A plataforma deve orientar o próximo passo antes de apresentar qualquer erro ou barreira ao usuário.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">🧠</div>
+      <div class="principle-title">Decisão com contexto</div>
+      <div class="principle-desc">Campos e opções devem ter explicações do impacto, não apenas labels. O usuário precisa entender para escolher bem.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">💰</div>
+      <div class="principle-title">Custo sempre visível</div>
+      <div class="principle-desc">Qualquer ação que impacte custo (criação, resize, auto resize) deve exibir estimativa financeira antes da confirmação.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">🙋</div>
+      <div class="principle-title">Autonomia do usuário</div>
+      <div class="principle-desc">O usuário deve conseguir avançar sozinho na jornada, sem depender de Slack, DBA ou DevFinOps para cada etapa.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">🗂</div>
+      <div class="principle-title">Rastreabilidade</div>
+      <div class="principle-desc">Toda ação relevante deve gerar registro auditável. Alterações, exclusões e aprovações devem ter histórico acessível.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">⏱</div>
+      <div class="principle-title">SLA transparente</div>
+      <div class="principle-desc">Toda operação assíncrona deve exibir tempo estimado de conclusão. Ansiedade diminui com previsibilidade.</div>
+    </div>
+    <div class="principle-card">
+      <div class="principle-icon">🛡</div>
+      <div class="principle-title">Prevenção antes do erro</div>
+      <div class="principle-desc">Checklists, alertas e validações devem aparecer antes da ação crítica, não depois que o problema aconteceu.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <p class="eyebrow" style="margin-bottom:16px">Estrutura de documentação recomendada</p>
+  <div style="display:flex; flex-wrap:wrap; gap:8px">
+    <span class="tag purple">1. Pré-requisitos</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">2. Primeiro acesso</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">3. Solicitação de acesso</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">4. Aprovação</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">5. Criação de banco</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">6. Operações</span>
+    <span style="color:var(--text-hint);font-size:18px">→</span>
+    <span class="tag purple">7. Suporte</span>
+  </div>
+
+  <hr class="divider">
+
+  <p class="eyebrow" style="margin-bottom:12px">Glossário recomendado</p>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead>
+        <tr style="background:var(--bg)">
+          <th style="padding:10px 16px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Termo</th>
+          <th style="padding:10px 16px;text-align:left;font-weight:500;color:var(--text-muted);border-bottom:1px solid var(--border)">Significado para o usuário</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="padding:10px 16px;border-bottom:1px solid var(--border);font-weight:500">Team</td><td style="padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text-muted)">Grupo responsável pelos bancos de dados de um produto ou área</td></tr>
+        <tr style="background:var(--bg)"><td style="padding:10px 16px;border-bottom:1px solid var(--border);font-weight:500">RITM</td><td style="padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text-muted)">Solicitação formal no ServiceNow para liberar acesso ou recurso</td></tr>
+        <tr><td style="padding:10px 16px;border-bottom:1px solid var(--border);font-weight:500">Environment</td><td style="padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text-muted)">Ambiente onde o banco roda: DEV (desenvolvimento) ou PROD (produção)</td></tr>
+        <tr style="background:var(--bg)"><td style="padding:10px 16px;border-bottom:1px solid var(--border);font-weight:500">Engine</td><td style="padding:10px 16px;border-bottom:1px solid var(--border);color:var(--text-muted)">Tecnologia do banco: MySQL, PostgreSQL, etc.</td></tr>
+        <tr><td style="padding:10px 16px;font-weight:500">Auto resize</td><td style="padding:10px 16px;color:var(--text-muted)">O banco aumenta de tamanho automaticamente ao atingir o limite — pode gerar custo adicional</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<footer>
+  Análise de UX por <strong>Micaela Franca</strong> · DBaaS · Maio 2026
+</footer>
+
+<script>
+  function show(id) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    event.target.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
